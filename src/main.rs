@@ -62,24 +62,20 @@ impl EventHandler for Handler {
                     .unwrap()
                     .id;
 
-                //tallentaa hakemuksen tietoja databaseen
-                save_allowlist(Allowlist {
-                    message_id: msg_id.0,
-                    author_id: message.author.id.0,
-                });
+                //TODO: tallentaa hakemuksen tietoja databaseen
             }
         };
     }
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         match interaction {
             Interaction::MessageComponent(button) => {
-                let guild_id = button.guild_id.unwrap().0;
-                let channel_id = button.channel_id.0;
-                let message_id = button.message.id.0;
+                let guild_id: u64 = button.guild_id.unwrap().0;
+                let channel_id: u64 = button.channel_id.0;
+                let message_id: u64 = button.message.id.0;
 
                 if button.data.custom_id == "hyvaksy_hakemus" {
-                    //hakee databasesta hakemuksen tekiän
-                    let allowlist_author_id: u64 = get_allowlist_author(button.message.id.0);
+                    //TODO: hakee databasesta hakemuksen tekiän
+                    let allowlist_author_id: u64 = 936258404920475748;
 
                     //hakee hakemuksen tekiän discordin apista
                     let allowlist_user = ctx.http.get_user(allowlist_author_id).await.unwrap();
@@ -121,11 +117,10 @@ impl EventHandler for Handler {
                         .await
                         .unwrap();
 
-                    //poistaa datan databasesta
-                    remove_allowlist(message_id);
+                    //TODO: poistaa datan databasesta
                 } else if button.data.custom_id == "hylkaa_hakemus" {
-                    //hakee databasesta hakemuksen tekiän
-                    let allowlist_author_id: u64 = get_allowlist_author(button.message.id.0);
+                    //TODO: hakee databasesta hakemuksen tekiän
+                    let allowlist_author_id: u64 = 936258404920475748;
 
                     //hakee discordin apista hakemuksen tekijän
                     let allowlist_user = ctx.http.get_user(allowlist_author_id).await.unwrap();
@@ -150,8 +145,7 @@ impl EventHandler for Handler {
                         .await
                         .unwrap();
 
-                    //poistaa datan databasesta
-                    remove_allowlist(message_id);
+                    //TODO: poistaa datan databasesta
                 }
             }
             _ => {}
