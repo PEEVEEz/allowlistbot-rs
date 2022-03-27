@@ -71,7 +71,7 @@ impl EventHandler for Handler {
                 let message_id: u64 = button.message.id.0;
                 let button_id = button.data.custom_id;
 
-                if button_id.starts_with("hyvaksy_hakemus") {
+                if button_id.starts_with("hyvaksy_hakemus_") {
                     let split = button_id.split("_");
                     let vec_split: Vec<&str> = split.collect();
                     let allowlist_author_id: u64 = vec_split[2].parse::<u64>().unwrap();
@@ -90,8 +90,8 @@ impl EventHandler for Handler {
                         .parse::<u64>()
                         .expect("Allowlist roolin ID:tä ei löytynyt .env tiedostosta");
 
-                    //odottaa 1 sekunnin ennen jatkamista
-                    sleep(Duration::from_secs(1)).await;
+                    //odottaa 200 millisekunttia ennen jatkamista
+                    sleep(Duration::from_millis(200)).await;
 
                     //lisää allowlist roolin
                     allowlist_member
@@ -116,8 +116,11 @@ impl EventHandler for Handler {
                         .await
                         .unwrap();
 
-                    println!("Hakemus hyväksytty [{}]", allowlist_author_id)
-                } else if button_id.starts_with("hylkaa_hakemus") {
+                    println!(
+                        "Hakemus hyväksytty [{}, {}]",
+                        allowlist_author_id, message_id
+                    )
+                } else if button_id.starts_with("hylkaa_hakemus_") {
                     let split = button_id.split("_");
                     let vec_split: Vec<&str> = split.collect();
                     let allowlist_author_id: u64 = vec_split[2].parse::<u64>().unwrap();
@@ -125,8 +128,8 @@ impl EventHandler for Handler {
                     //hakee discordin apista hakemuksen tekijän
                     let allowlist_user = ctx.http.get_user(allowlist_author_id).await.unwrap();
 
-                    //odottaa 1 sekunnin ennen jatkamista
-                    sleep(Duration::from_secs(1)).await;
+                    //odottaa 200 millisekunttia ennen jatkamista
+                    sleep(Duration::from_millis(200)).await;
 
                     //lähettää dm hakemus hylätty
                     allowlist_user
@@ -145,7 +148,7 @@ impl EventHandler for Handler {
                         .await
                         .unwrap();
 
-                    println!("Hakemus hylätty [{}]", allowlist_author_id)
+                    println!("Hakemus hylätty [{}, {}]", allowlist_author_id, message_id)
                 }
             }
             _ => {}
