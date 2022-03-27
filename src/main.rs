@@ -1,11 +1,11 @@
-mod database;
-
-use crate::database::*;
 use serenity::{
-    async_trait, client::bridge::gateway::GatewayIntents, model::channel::Message,
-    model::gateway::Ready, model::id::ChannelId,
-    model::interactions::message_component::ButtonStyle, model::interactions::Interaction,
-    prelude::*,
+    async_trait,
+    client::bridge::gateway::GatewayIntents,
+    model::channel::Message,
+    model::gateway::Ready,
+    model::id::ChannelId,
+    model::interactions::{message_component::ButtonStyle, Interaction},
+    prelude::{Client, Context, EventHandler},
 };
 use std::env;
 use tokio::time::{sleep, Duration};
@@ -15,7 +15,7 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _ctx: Context, ready: Ready) {
-        println!("Connected as {}", ready.user.tag());
+        println!("Botti on päällä [{}]", ready.user.tag());
     }
     async fn message(&self, ctx: Context, message: Message) {
         if !message.author.bot {
@@ -36,7 +36,7 @@ impl EventHandler for Handler {
                 let check_channel = ChannelId::from(check_channel_id);
 
                 //Lähetä hakemus tarkistettavaksi
-                let msg_id = check_channel
+                check_channel
                     .send_message(ctx.http, |m| {
                         m.embed(|e| {
                             e.title(format!("Hakemus - {}", message.author.tag()));
@@ -48,21 +48,18 @@ impl EventHandler for Handler {
                                 r.create_button(|b| {
                                     b.label("Hyväksy");
                                     b.style(ButtonStyle::Success);
-                                    b.custom_id("hyvaksy_hakemus")
+                                    b.custom_id(format!("hyvaksy_hakemus_{}", message.author.id))
                                 });
                                 r.create_button(|b| {
                                     b.label("Hylkää");
                                     b.style(ButtonStyle::Danger);
-                                    b.custom_id("hylkaa_hakemus")
+                                    b.custom_id(format!("hylkaa_hakemus_{}", message.author.id))
                                 })
                             })
                         })
                     })
                     .await
-                    .unwrap()
-                    .id;
-
-                //TODO: tallentaa hakemuksen tietoja databaseen
+                    .unwrap();
             }
         };
     }
@@ -72,10 +69,12 @@ impl EventHandler for Handler {
                 let guild_id: u64 = button.guild_id.unwrap().0;
                 let channel_id: u64 = button.channel_id.0;
                 let message_id: u64 = button.message.id.0;
+                let button_id = button.data.custom_id;
 
-                if button.data.custom_id == "hyvaksy_hakemus" {
-                    //TODO: hakee databasesta hakemuksen tekiän
-                    let allowlist_author_id: u64 = 936258404920475748;
+                if button_id.starts_with("hyvaksy_hakemus") {
+                    let split = button_id.split("_");
+                    let vec_split: Vec<&str> = split.collect();
+                    let allowlist_author_id: u64 = vec_split[2].parse::<u64>().unwrap();
 
                     //hakee hakemuksen tekiän discordin apista
                     let allowlist_user = ctx.http.get_user(allowlist_author_id).await.unwrap();
@@ -92,7 +91,7 @@ impl EventHandler for Handler {
                         .expect("Allowlist roolin ID:tä ei löytynyt .env tiedostosta");
 
                     //odottaa 1 sekunnin ennen jatkamista
-                    sleep(Duration::from_secs(2)).await;
+                    sleep(Duration::from_secs(1)).await;
 
                     //lisää allowlist roolin
                     allowlist_member
@@ -117,16 +116,17 @@ impl EventHandler for Handler {
                         .await
                         .unwrap();
 
-                    //TODO: poistaa datan databasesta
-                } else if button.data.custom_id == "hylkaa_hakemus" {
-                    //TODO: hakee databasesta hakemuksen tekiän
-                    let allowlist_author_id: u64 = 936258404920475748;
+                    println!("Hakemus hyväksytty [{}]", allowlist_author_id)
+                } else if button_id.starts_with("hylkaa_hakemus") {
+                    let split = button_id.split("_");
+                    let vec_split: Vec<&str> = split.collect();
+                    let allowlist_author_id: u64 = vec_split[2].parse::<u64>().unwrap();
 
                     //hakee discordin apista hakemuksen tekijän
                     let allowlist_user = ctx.http.get_user(allowlist_author_id).await.unwrap();
 
                     //odottaa 1 sekunnin ennen jatkamista
-                    sleep(Duration::from_secs(2)).await;
+                    sleep(Duration::from_secs(1)).await;
 
                     //lähettää dm hakemus hylätty
                     allowlist_user
@@ -145,7 +145,7 @@ impl EventHandler for Handler {
                         .await
                         .unwrap();
 
-                    //TODO: poistaa datan databasesta
+                    println!("Hakemus hylätty [{}]", allowlist_author_id)
                 }
             }
             _ => {}
