@@ -72,9 +72,8 @@ impl EventHandler for Handler {
                 let button_id = button.data.custom_id;
 
                 if button_id.starts_with("hyvaksy_hakemus_") {
-                    let split = button_id.split("_");
-                    let vec_split: Vec<&str> = split.collect();
-                    let allowlist_author_id: u64 = vec_split[2].parse::<u64>().unwrap();
+                    let split: Vec<&str> = button_id.split("_").collect();
+                    let allowlist_author_id: u64 = split[2].parse::<u64>().unwrap();
 
                     //hakee hakemuksen tekiän discordin apista
                     let allowlist_user = ctx.http.get_user(allowlist_author_id).await.unwrap();
@@ -121,9 +120,8 @@ impl EventHandler for Handler {
                         allowlist_author_id, message_id
                     )
                 } else if button_id.starts_with("hylkaa_hakemus_") {
-                    let split = button_id.split("_");
-                    let vec_split: Vec<&str> = split.collect();
-                    let allowlist_author_id: u64 = vec_split[2].parse::<u64>().unwrap();
+                    let split: Vec<&str> = button_id.split("_").collect();
+                    let allowlist_author_id: u64 = split[2].parse::<u64>().unwrap();
 
                     //hakee discordin apista hakemuksen tekijän
                     let allowlist_user = ctx.http.get_user(allowlist_author_id).await.unwrap();
@@ -158,7 +156,7 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().ok();
+    dotenv::dotenv().expect(".env tiedostoa ei löytynyt");
     //discord
     let bot_token = env::var("BOT_TOKEN").expect("Tokenia ei löytynyt .env tiedostosta!");
     let application_id = env::var("APPLICATION_ID")
